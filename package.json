@@ -1,0 +1,21 @@
+{
+  "name": "pdf-extract",
+  "version": "1.0.0",
+  "description": "extraire des données de pdf",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "main": "index.js",
+  "repository": "https://github.com/satch9/pdf-extract",
+  "author": "Vincent Jue <viny1976@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-fileupload": "^1.5.0",
+    "pdf.js-extract": "^0.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.2"
+  }
+}

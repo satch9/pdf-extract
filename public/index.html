@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLUX-OSCARR</title>
+
+</head>
+
+<body>
+    <input type="file" id="inpFile">
+    <button type="button" id="btnUpload">Upload</button>
+
+    <script>
+        const inpFile = document.getElementById("inpFile")
+        const btnUpload = document.getElementById("btnUpload")
+
+        btnUpload.addEventListener("click", () => {
+            const formData = new FormData();
+
+            formData.append("pdfFile", inpFile.files[0]);
+
+            fetch("/upload", {
+                method: "post",
+                body: formData
+            }).then(response => {
+                console.log("response", response);
+            })
+        })
+    </script>
+</body>
+
+</html>
