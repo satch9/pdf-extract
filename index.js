@@ -3,13 +3,12 @@ import fileUpload from 'express-fileupload'
 import path from 'path'
 import fs from 'fs'
 import { PDFExtract } from 'pdf.js-extract'
-import { log } from 'console'
 
 const app = express()
 const PORT = process.env.PORT || 3000
 const pathPublic = path.resolve('public')
 const samplesPath = path.join(pathPublic, '../samples/')
-const renamePath = path.join('/workspaces/pdf-extract', '/samples/')
+const renamePath = path.join('/workspaces/pdf-extract/', 'samples/')
 
 app.use('/', express.static(pathPublic))
 app.use(fileUpload())
@@ -50,43 +49,45 @@ app.post('/upload', (req, res) => {
         'data.pages[0].pageInfo extractData.js',
         data.pages[0].pageInfo,
       ) */
-      console.log('data.pages[0].content extractData.js', data.pages[0].content)
+      /* console.log('data.pages[0].content extractData.js', data.pages[0].content) */
 
-      data.pages[0].content.map((element,index)=>{
-        if(index>11){
-          let json = createJsonFromTable(data.pages[0].content)
-          console.log("json",json)
+      data.pages[0].content.map((element) => {
+        if (
+          element.str
+            .toLowerCase()
+            .includes(
+              'modification agent dans le flux de synchronisation fichier: ',
+            )
+        ) {
+          //console.log('element.str', element.str)
+          newNameFile = element.str.split(': ')[1]
+          fs.rename(
+            String(uploadPath),
+            `${renamePath}${newNameFile}.pdf`,
+            (err) => {
+              if (err) {
+                console.log(err)
+                return res.status(500).json({ message: 'Error renaming file' })
+              } else {
+                console.log('File renamed successfully')
+                return res
+                  .status(200)
+                  .json({ message: 'File uploaded and renamed successfully' })
+              }
+            },
+          )
         }
       })
-      
+      /* console.log('data.pages[0].content extractData.js', data.pages[0].content.splice(12, data.pages[0].content.length - 11)) */
 
-      const targetElement = data.pages[0].content.find((element) => {
-        return element.str.indexOf(
-          'Modification Agent dans le flux de synchronisation fichier:',
-        )!== -1
-      })
-
-      if (targetElement) {
-        newNameFile = targetElement.str.slice(59, 75)
-        console.log("newNameFile",newNameFile)
-
-        fs.rename(String(uploadPath), `${renamePath}${newNameFile}.pdf`, (err) => {
-          if (err) {
-            console.log(err)
-            return res.status(500).json({ message: 'Error renaming file' })
-          } else {
-            console.log('File renamed successfully')
-            return res
-             .status(200)
-             .json({ message: 'File uploaded and renamed successfully' })
-          }
-        })
-      }
+      let dataTable = createJsonFromTable(
+        data.pages[0].content.splice(12, data.pages[0].content.length - 11),
+        newNameFile,
+      )
+      //console.log("dataTable",dataTable)
     }
   })
-
 })
-
 
 function getCurrentFilenames() {
   console.log('Current filenames:')
@@ -95,22 +96,54 @@ function getCurrentFilenames() {
   })
 }
 
-function createJsonFromTable(data) {
-  const json = []
-
-  for (const item of data) {
-    const jsonItem = {
-      agent: item.str.slice(0, 8),
-      entiteDeRattachement: item.str.slice(8, 27),
-      action: item.str.slice(27, 33),
-      modification: item.str.slice(33, 42),
-      avant: item.str.slice(42, 51),
-      apres: item.str.slice(51, 60)
-    }
-    json.push(jsonItem)
+function createJsonFromTable(data, name) {
+  const result = {}
+  const result_agents = {
+    agent: '',
+    entite: '',
+    action: '',
+    modification: '',
+    avant: '',
+    apres: '',
   }
-  return json
-}
+  const agentsArray = []
+  //console.log("data",data)
 
+  data.forEach((element, index) => {
+    /* if (index >= 0 && index <= 5) {
+      console.log('element', element, Math.round(element.x))
+    } */
+
+    if (Math.round(element.x) === 40) {
+      if (result_agents.agent !== '') {
+        agentsArray.push({ ...result_agents })
+        result_agents.agent = ''
+        result_agents.entite = ''
+        result_agents.action = ''
+        result_agents.modification = ''
+        result_agents.avant = ''
+        result_agents.apres = ''
+      }
+      result_agents.agent = element.str
+    } else if (Math.round(element.x) === 265) {
+      result_agents.entite += element.str + ' '
+    } else if (Math.round(element.x) === 431 || Math.round(element.x) === 432) {
+      result_agents.action = element.str
+    } else if (Math.round(element.x) === 455) {
+      result_agents.modification = element.str
+    } else if (Math.round(element.x) === 605) {
+      result_agents.avant = element.str
+    } else if (Math.round(element.x) === 705) {
+      result_agents.apres = element.str
+    }
+  })
+
+  if (result_agents.agent !== '') {
+    agentsArray.push({ ...result_agents });
+  }
+
+  result[name] = agentsArray
+  return result
+}
 
 app.listen(PORT)
