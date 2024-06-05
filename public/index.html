@@ -5,28 +5,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FLUX-OSCARR</title>
-
+    <style>
+        #responseContainer {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 
 <body>
     <input type="file" id="inpFile">
+    <input type="date" name="inpDate" id="inpDate">
     <button type="button" id="btnUpload">Upload</button>
+
+
+    <div id="responseContainer"></div>
 
     <script>
         const inpFile = document.getElementById("inpFile")
+        const inpDate = document.getElementById("inpDate")
         const btnUpload = document.getElementById("btnUpload")
+        const responseContainer = document.getElementById("responseContainer")
 
         btnUpload.addEventListener("click", () => {
             const formData = new FormData();
 
+            if (!inpFile.files[0]) {
+                responseContainer.innerHTML = `<p>Please select a file.</p>`;
+                return;
+            }
+
+
+
             formData.append("pdfFile", inpFile.files[0]);
+            formData.append("dateJournalFluxSynchronisation", inpDate.value)
+
+            console.log("formData", formData)
 
             fetch("/upload", {
                 method: "post",
                 body: formData
             }).then(response => {
-                console.log("response", response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json()
             })
+                .then(data => {
+                    responseContainer.innerHTML = `
+                    <h3>${data.message}</h3>
+                    <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                `;
+                })
+                .catch(error => {
+                    responseContainer.innerHTML = `<p>Error: ${error.message}</p>`;
+                });
         })
     </script>
 </body>
