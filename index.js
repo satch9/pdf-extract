@@ -50,7 +50,13 @@ app.post("/upload", (req, res) => {
       console.log(err);
       return res.status(500).json({ message: "Error extracting PDF" });
     } else {
-      data.pages[0].content.map((element) => {
+      let allPagesData = [];
+
+      data.pages.forEach((page) => {
+        allPagesData = allPagesData.concat(page.content);
+      });
+      
+      allPagesData.content.map((element) => {
         if (
           element.str
             .toLowerCase()
@@ -78,9 +84,9 @@ app.post("/upload", (req, res) => {
               .json({ message: "Le fichier existe déjà.", data: {} });
           } else {
             let dataTable = createJsonFromTable(
-              data.pages[0].content.splice(
+              allPagesData.splice(
                 12,
-                data.pages[0].content.length - 12
+                allPagesData.length - 12
               ),
               newNameFile,
               dateSynchronisation
