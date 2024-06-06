@@ -91,7 +91,7 @@ app.post("/upload", (req, res) => {
               newNameFile,
               dateSynchronisation
             );
-            const modifiedObj = removeLastTwoElementsFromObjectArray(
+            const modifiedObj = removeSpecificElementsFromObjectArray(
               dataTable,
               newNameFile
             );
@@ -184,10 +184,16 @@ function createJsonFromTable(data, name, dateSynchronisation) {
   return result;
 }
 
-function removeLastTwoElementsFromObjectArray(obj, key) {
-  if (obj[key] && Array.isArray(obj[key])) {
+function removeSpecificElementsFromObjectArray(obj, key) {
+  /* if (obj[key] && Array.isArray(obj[key])) {
     // Remove the last two elements from the array
     obj[key].splice(-2, 2);
+  }
+  return obj; */
+  if (obj[key] && Array.isArray(obj[key])) {
+    obj[key] = obj[key].filter(element => {
+      return !(element.numAgent === null)
+    });
   }
   return obj;
 }
