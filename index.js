@@ -167,12 +167,12 @@ function createJsonFromTable(data, name, dateSynchronisation) {
     } else if (x === 605) {
       if (currentAgent) {
         const lignes = agentsMap.get(currentAgent).lignes
-        lignes[lignes.length - 1].avant = element.str
+        lignes[lignes.length - 1].avant += element.str + ' '
       }
     } else if (x === 705) {
       if (currentAgent) {
         const lignes = agentsMap.get(currentAgent).lignes
-        lignes[lignes.length - 1].apres = element.str
+        lignes[lignes.length - 1].apres += element.str + ' '
       }
     }
   })
